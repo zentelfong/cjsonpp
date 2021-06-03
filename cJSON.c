@@ -80,12 +80,15 @@ void cJSON_Free(void *c) {
 	cJSON_free(c);
 }
 
+static int total = 0;
+
 /* Internal constructor. */
 static cJSON *cJSON_New_Item(void)
 {
 	cJSON *node = (cJSON *)cJSON_malloc(sizeof(cJSON));
 	if (node)
 	{
+		++total;
 		memset(node, 0, sizeof(cJSON));
 		node->ref = 1;
 	}
@@ -116,6 +119,8 @@ void cJSON_Release(cJSON *c)
 				cJSON_free(c->string);
 			cJSON_free(c);
 			c = next;
+
+			--total;
 		}
 	}
 }

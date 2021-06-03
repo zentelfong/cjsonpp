@@ -41,9 +41,10 @@ public:
 		: json_(cJSON_CreateString(s.c_str())) {
 	}
 
-	Json(cJSON* j)
+	Json(cJSON* j,bool ref = true)
 		: json_(j) {
-		cJSON_Ref(json_);
+		if(ref)
+			cJSON_Ref(json_);
 	}
 
 	Json(const Json& j)
@@ -63,11 +64,11 @@ public:
 	}
 
 	static Json object() {
-		return Json(cJSON_CreateObject());
+		return Json(cJSON_CreateObject(),false);
 	}
 
 	static Json array() {
-		return Json(cJSON_CreateArray());
+		return Json(cJSON_CreateArray(), false);
 	}
 
 	Type type() {
@@ -83,22 +84,22 @@ public:
 
 	static Json parse(const char* str) {
 		cJSON* j = cJSON_Parse(str);
-		return Json(j);
+		return Json(j, false);
 	}
 
 	static Json parse(const std::string& str) {
 		cJSON* j = cJSON_Parse(str.c_str());
-		return Json(j);
+		return Json(j, false);
 	}
 
-	std::string Json::print() {
+	std::string print() {
 		char* s = cJSON_Print(json_);
 		std::string s2(s);
 		cJSON_Free(s);
 		return std::move(s2);
 	}
 
-	std::string Json::dump() {
+	std::string dump() {
 		char* s = cJSON_PrintUnformatted(json_);
 		std::string s2(s);
 		cJSON_Free(s);
