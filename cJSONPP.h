@@ -80,6 +80,11 @@ public:
 		}
 	}
 
+	Json clone() {
+		cJSON *j = cJSON_Duplicate(json_, true);
+		return Json(j, false);
+	}
+
 	template<class T> T to();
 
 	static Json parse(const char* str) {
