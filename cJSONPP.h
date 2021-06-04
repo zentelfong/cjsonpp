@@ -102,15 +102,43 @@ public:
 	std::string print() {
 		char* s = cJSON_Print(json_);
 		std::string s2(s);
-		cJSON_Free(s);
+		cJSON_free(s);
 		return std::move(s2);
 	}
 
 	std::string dump() {
 		char* s = cJSON_PrintUnformatted(json_);
 		std::string s2(s);
-		cJSON_Free(s);
+		cJSON_free(s);
 		return std::move(s2);
+	}
+
+	bool isNumber() {
+		return cJSON_IsNumber(json_);
+	}
+
+	bool isString() {
+		return cJSON_IsString(json_);
+	}
+
+	bool isTrue() {
+		return cJSON_IsTrue(json_);
+	}
+
+	bool isFalse() {
+		return cJSON_IsFalse(json_);
+	}
+
+	bool isArray() {
+		return cJSON_IsArray(json_);
+	}
+
+	bool isObject() {
+		return cJSON_IsObject(json_);
+	}
+
+	bool isNull() {
+		return cJSON_IsNull(json_);
 	}
 
 	int size() {
@@ -122,6 +150,14 @@ public:
 	}
 
 	Json at(const char* key) {
+		return Json(cJSON_GetObjectItem(json_, key));
+	}
+
+	Json operator[](int idx) {
+		return Json(cJSON_GetArrayItem(json_, idx));
+	}
+
+	Json operator[](const char* key) {
 		return Json(cJSON_GetObjectItem(json_, key));
 	}
 
@@ -143,6 +179,26 @@ public:
 
 	void replace(const char* key, const Json& item) {
 		cJSON_ReplaceItemInObject(json_, key, item.json_);
+	}
+
+	void remove(int which) {
+		cJSON_DeleteItemFromArray(json_, which);
+	}
+
+	void remove(const char* key) {
+		cJSON_DeleteItemFromObject(json_, key);
+	}
+
+	void removeCs(const char* key) {
+		cJSON_DeleteItemFromObjectCaseSensitive(json_, key);
+	}
+
+	bool operator==(const Json& ref) {
+		return cJSON_Compare(json_, ref.json_, true);
+	}
+
+	bool operator!=(const Json& ref) {
+		return !cJSON_Compare(json_, ref.json_, true);
 	}
 
 	class Iterator:public std::iterator<std::input_iterator_tag,cJSON> {

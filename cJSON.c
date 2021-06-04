@@ -44,7 +44,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <float.h>
-
+#include <assert.h>
 #ifdef ENABLE_LOCALES
 #include <locale.h>
 #endif
@@ -282,10 +282,6 @@ CJSON_PUBLIC(void) cJSON_Release(cJSON *item)
 			item = next;
 		}
 	}
-}
-
-CJSON_PUBLIC(void) cJSON_Free(void* item) {
-	global_hooks.deallocate(item);
 }
 
 /* get the decimal point character of the current locale */
@@ -2007,6 +2003,9 @@ static cJSON_bool add_item_to_object(cJSON * const object, const char * const st
 {
     char *new_key = NULL;
     int new_type = cJSON_Invalid;
+
+	assert(item->next == NULL);
+	assert(item->prev == NULL);
 
     if ((object == NULL) || (string == NULL) || (item == NULL) || (object == item))
     {

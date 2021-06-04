@@ -124,6 +124,7 @@ typedef struct cJSON
 
     /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
     char *string;
+
 } cJSON;
 
 typedef struct cJSON_Hooks
@@ -149,8 +150,6 @@ CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks);
 
 CJSON_PUBLIC(void) cJSON_Ref(cJSON* item);
 CJSON_PUBLIC(void) cJSON_Release(cJSON* item);
-
-CJSON_PUBLIC(void) cJSON_Free(void* item);
 
 #define cJSON_Delete cJSON_Release
 
