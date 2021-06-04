@@ -8,13 +8,15 @@ namespace cjsonpp {
 class Json {
 public:
 	enum Type {
-		kFalse,
-		kTrue,
-		kNull,
-		kNumber,
-		kString,
-		kArray,
-		kObject,
+		kInvalid = cJSON_Invalid,
+		kFalse = cJSON_False,
+		kTrue = cJSON_True,
+		kNull = cJSON_NULL,
+		kNumber = cJSON_Number,
+		kString = cJSON_String,
+		kArray = cJSON_Array,
+		kObject = cJSON_Object,
+		kRaw = cJSON_Raw,
 	};
 
 	Json()

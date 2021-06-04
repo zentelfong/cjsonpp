@@ -250,11 +250,11 @@ static cJSON *cJSON_New_Item(const internal_hooks * const hooks)
     return node;
 }
 
-CJSON_PUBLIC(void) cJSON_Ref(cJSON *c)
+CJSON_PUBLIC(void) cJSON_Ref(cJSON *item)
 {
-	if (c)
+	if (item)
 	{
-		++c->ref;
+		++item->ref;
 	}
 }
 
@@ -1153,7 +1153,7 @@ CJSON_PUBLIC(cJSON *) cJSON_ParseWithLengthOpts(const char *value, size_t buffer
 fail:
     if (item != NULL)
     {
-        cJSON_Delete(item);
+		cJSON_Release(item);
     }
 
     if (value != NULL)
@@ -1540,7 +1540,7 @@ success:
 fail:
     if (head != NULL)
     {
-        cJSON_Delete(head);
+		cJSON_Release(head);
     }
 
     return false;
@@ -1715,7 +1715,7 @@ success:
 fail:
     if (head != NULL)
     {
-        cJSON_Delete(head);
+		cJSON_Release(head);
     }
 
     return false;
@@ -2059,7 +2059,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddNullToObject(cJSON * const object, const char * co
         return null;
     }
 
-    cJSON_Delete(null);
+	cJSON_Release(null);
     return NULL;
 }
 
@@ -2071,7 +2071,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddTrueToObject(cJSON * const object, const char * co
         return true_item;
     }
 
-    cJSON_Delete(true_item);
+	cJSON_Release(true_item);
     return NULL;
 }
 
@@ -2083,7 +2083,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddFalseToObject(cJSON * const object, const char * c
         return false_item;
     }
 
-    cJSON_Delete(false_item);
+	cJSON_Release(false_item);
     return NULL;
 }
 
@@ -2095,7 +2095,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddBoolToObject(cJSON * const object, const char * co
         return bool_item;
     }
 
-    cJSON_Delete(bool_item);
+	cJSON_Release(bool_item);
     return NULL;
 }
 
@@ -2107,7 +2107,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddNumberToObject(cJSON * const object, const char * 
         return number_item;
     }
 
-    cJSON_Delete(number_item);
+	cJSON_Release(number_item);
     return NULL;
 }
 
@@ -2119,7 +2119,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddStringToObject(cJSON * const object, const char * 
         return string_item;
     }
 
-    cJSON_Delete(string_item);
+	cJSON_Release(string_item);
     return NULL;
 }
 
@@ -2131,7 +2131,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddRawToObject(cJSON * const object, const char * con
         return raw_item;
     }
 
-    cJSON_Delete(raw_item);
+	cJSON_Release(raw_item);
     return NULL;
 }
 
@@ -2143,7 +2143,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddObjectToObject(cJSON * const object, const char * 
         return object_item;
     }
 
-    cJSON_Delete(object_item);
+	cJSON_Release(object_item);
     return NULL;
 }
 
@@ -2155,7 +2155,7 @@ CJSON_PUBLIC(cJSON*) cJSON_AddArrayToObject(cJSON * const object, const char * c
         return array;
     }
 
-    cJSON_Delete(array);
+	cJSON_Release(array);
     return NULL;
 }
 
@@ -2207,7 +2207,7 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromArray(cJSON *array, int which)
 
 CJSON_PUBLIC(void) cJSON_DeleteItemFromArray(cJSON *array, int which)
 {
-    cJSON_Delete(cJSON_DetachItemFromArray(array, which));
+	cJSON_Release(cJSON_DetachItemFromArray(array, which));
 }
 
 CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObject(cJSON *object, const char *string)
@@ -2226,12 +2226,12 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCaseSensitive(cJSON *object, con
 
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObject(cJSON *object, const char *string)
 {
-    cJSON_Delete(cJSON_DetachItemFromObject(object, string));
+	cJSON_Release(cJSON_DetachItemFromObject(object, string));
 }
 
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCaseSensitive(cJSON *object, const char *string)
 {
-    cJSON_Delete(cJSON_DetachItemFromObjectCaseSensitive(object, string));
+	cJSON_Release(cJSON_DetachItemFromObjectCaseSensitive(object, string));
 }
 
 /* Replace array/object items with new ones. */
@@ -2308,7 +2308,7 @@ CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemViaPointer(cJSON * const parent, cJSON
 
     item->next = NULL;
     item->prev = NULL;
-    cJSON_Delete(item);
+	cJSON_Release(item);
 
     return true;
 }
@@ -2431,7 +2431,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateString(const char *string)
         item->valuestring = (char*)cJSON_strdup((const unsigned char*)string, &global_hooks);
         if(!item->valuestring)
         {
-            cJSON_Delete(item);
+			cJSON_Release(item);
             return NULL;
         }
     }
@@ -2448,7 +2448,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateRaw(const char *raw)
         item->valuestring = (char*)cJSON_strdup((const unsigned char*)raw, &global_hooks);
         if(!item->valuestring)
         {
-            cJSON_Delete(item);
+			cJSON_Release(item);
             return NULL;
         }
     }
@@ -2498,7 +2498,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateIntArray(const int *numbers, int count)
         n = cJSON_CreateNumber(numbers[i]);
         if (!n)
         {
-            cJSON_Delete(a);
+			cJSON_Release(a);
             return NULL;
         }
         if(!i)
@@ -2538,7 +2538,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateFloatArray(const float *numbers, int count)
         n = cJSON_CreateNumber((double)numbers[i]);
         if(!n)
         {
-            cJSON_Delete(a);
+			cJSON_Release(a);
             return NULL;
         }
         if(!i)
@@ -2578,7 +2578,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateDoubleArray(const double *numbers, int count)
         n = cJSON_CreateNumber(numbers[i]);
         if(!n)
         {
-            cJSON_Delete(a);
+			cJSON_Release(a);
             return NULL;
         }
         if(!i)
@@ -2618,7 +2618,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateStringArray(const char *const *strings, int co
         n = cJSON_CreateString(strings[i]);
         if(!n)
         {
-            cJSON_Delete(a);
+			cJSON_Release(a);
             return NULL;
         }
         if(!i)
@@ -2717,7 +2717,7 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
 fail:
     if (newitem != NULL)
     {
-        cJSON_Delete(newitem);
+		cJSON_Release(newitem);
     }
 
     return NULL;
