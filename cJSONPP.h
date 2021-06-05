@@ -54,6 +54,11 @@ public:
 		cJSON_Ref(json_);
 	}
 
+	Json(Json&& j)
+		: json_(j.json_) {
+		j.json_ = nullptr;
+	}
+
 	~Json() {
 		cJSON_Release(json_);
 	}
@@ -179,12 +184,12 @@ public:
 		cJSON_InsertItemInArray(json_,which, item.json_);
 	}
 
-	void replace(int which, const Json& item) {
-		cJSON_ReplaceItemInArray(json_, which, item.json_);
+	bool replace(int which, const Json& item) {
+		return cJSON_ReplaceItemInArray(json_, which, item.json_);
 	}
 
-	void replace(const char* key, const Json& item) {
-		cJSON_ReplaceItemInObject(json_, key, item.json_);
+	bool replace(const char* key, const Json& item) {
+		return cJSON_ReplaceItemInObject(json_, key, item.json_);
 	}
 
 	void remove(int which) {
@@ -197,6 +202,10 @@ public:
 
 	void removeCs(const char* key) {
 		cJSON_DeleteItemFromObjectCaseSensitive(json_, key);
+	}
+
+	void removeAll() {
+		cJSON_DeleteAllItem(json_);
 	}
 
 	bool operator==(const Json& ref) {
@@ -270,6 +279,15 @@ template<> double Json::to() {
 	}
 }
 
+template<> float Json::to() {
+	if (type() == kNumber) {
+		return (float)json_->valuedouble;
+	}
+	else {
+		return 0.0f;
+	}
+}
+
 template<> int Json::to() {
 	if (type() == kNumber) {
 		return json_->valueint;
@@ -304,7 +322,7 @@ template<> bool Json::to() {
 	case kFalse:
 		return false;
 	case kString:
-		return strcmp(json_->valuestring,"1")==0;
+		return json_->valuestring[0] != '\0';
 	case kNumber:
 		return json_->valueint != 0;
 	default:

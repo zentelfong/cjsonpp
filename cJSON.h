@@ -235,6 +235,8 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCaseSensitive(cJSON *object, con
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObject(cJSON *object, const char *string);
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCaseSensitive(cJSON *object, const char *string);
 
+CJSON_PUBLIC(void) cJSON_DeleteAllItem(cJSON *object);
+
 /* Update array items. */
 CJSON_PUBLIC(cJSON_bool) cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem); /* Shifts pre-existing items to the right. */
 CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemViaPointer(cJSON * const parent, cJSON * const item, cJSON * replacement);

@@ -25,6 +25,13 @@ std::string readFile(const char* filename) {
 	return str;
 }
 
+void testRef() {
+	Json j1("hello world");
+	Json j2 = j1;
+
+	std::cout << j2.to<const char*>() << std::endl;
+}
+
 
 
 int main(int argc, const char** argv) {
@@ -43,10 +50,7 @@ int main(int argc, const char** argv) {
 		std::cout << it.key() << ":" << (*it).to<const char*>() << std::endl;
 	}
 
-
 	std::cout<< "num1:" << root["num1"].to<int>() << std::endl;
-
-
 
 	Json child = Json::array();
 
@@ -56,12 +60,14 @@ int main(int argc, const char** argv) {
 
 	root.add("child", child);
 
-	std::cout << root.print() << std::endl;
+	auto out22 = root.print();
+	std::cout << out22 << std::endl;
 
+	root.removeAll();
 
-	std::string data = readFile("../data/canada.json");
-	Json pased = Json::parse(data);
-	auto out = pased.dump();
+	//std::string data = readFile("../data/canada.json");
+	//Json pased = Json::parse(data);
+	//auto out = pased.dump();
 
 	getchar();
 	return 0;

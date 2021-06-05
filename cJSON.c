@@ -237,6 +237,10 @@ CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks)
     }
 }
 
+#if DEBUG
+static int total = 0;
+#endif
+
 /* Internal constructor. */
 static cJSON *cJSON_New_Item(const internal_hooks * const hooks)
 {
@@ -245,6 +249,9 @@ static cJSON *cJSON_New_Item(const internal_hooks * const hooks)
     {
         memset(node, '\0', sizeof(cJSON));
 		node->ref = 1;
+#if DEBUG
+		++total;
+#endif
     }
 
     return node;
@@ -280,6 +287,13 @@ CJSON_PUBLIC(void) cJSON_Release(cJSON *item)
 			}
 			global_hooks.deallocate(item);
 			item = next;
+
+#if DEBUG
+			--total;
+			if (total == 0) {
+				printf("all cjson releassed\n");
+			}
+#endif
 		}
 	}
 }
@@ -1778,7 +1792,7 @@ static cJSON_bool print_object(const cJSON * const item, printbuffer * const out
         *output_pointer++ = ':';
         if (output_buffer->format)
         {
-            *output_pointer++ = '\t';
+            *output_pointer++ = ' ';
         }
         output_buffer->offset += length;
 
@@ -2207,6 +2221,18 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromArray(cJSON *array, int which)
 CJSON_PUBLIC(void) cJSON_DeleteItemFromArray(cJSON *array, int which)
 {
 	cJSON_Release(cJSON_DetachItemFromArray(array, which));
+}
+
+CJSON_PUBLIC(void) cJSON_DeleteAllItem(cJSON *object) 
+{
+	if (!object)
+		return;
+	if (object->child)
+	{
+		cJSON_Release(object->child);
+		object->child = NULL;
+	}
+
 }
 
 CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObject(cJSON *object, const char *string)
