@@ -23,6 +23,10 @@ public:
 		: json_(cJSON_CreateNull()) {
 	}
 
+	Json(nullptr_t)
+		: json_(cJSON_CreateNull()) {
+	}
+
 	Json(bool b)
 		: json_(cJSON_CreateBool(b)) {
 	}
@@ -78,7 +82,7 @@ public:
 		return Json(cJSON_CreateArray(), false);
 	}
 
-	Type type() {
+	Type type() const {
 		if (json_) {
 			return (Type)(json_->type & 0xff);
 		}
@@ -87,7 +91,7 @@ public:
 		}
 	}
 
-	Json clone() {
+	Json clone() const {
 		cJSON *j = cJSON_Duplicate(json_, true);
 		return Json(j, false);
 	}
@@ -104,7 +108,7 @@ public:
 		return Json(j, false);
 	}
 
-	std::string print() {
+	std::string print() const {
 		char* s = cJSON_Print(json_);
 		if(!s){
 			return "";
@@ -114,7 +118,7 @@ public:
 		return std::move(s2);
 	}
 
-	std::string dump() {
+	std::string dump() const  {
 		char* s = cJSON_PrintUnformatted(json_);
 		if (!s) {
 			return "";
@@ -124,51 +128,51 @@ public:
 		return std::move(s2);
 	}
 
-	bool isNumber() {
+	bool isNumber() const  {
 		return cJSON_IsNumber(json_);
 	}
 
-	bool isString() {
+	bool isString() const  {
 		return cJSON_IsString(json_);
 	}
 
-	bool isTrue() {
+	bool isTrue() const  {
 		return cJSON_IsTrue(json_);
 	}
 
-	bool isFalse() {
+	bool isFalse() const  {
 		return cJSON_IsFalse(json_);
 	}
 
-	bool isArray() {
+	bool isArray() const {
 		return cJSON_IsArray(json_);
 	}
 
-	bool isObject() {
+	bool isObject() const {
 		return cJSON_IsObject(json_);
 	}
 
-	bool isNull() {
+	bool isNull() const {
 		return cJSON_IsNull(json_);
 	}
 
-	int size() {
+	int size() const  {
 		return cJSON_GetArraySize(json_);
 	}
 
-	Json at(int idx) {
+	Json at(int idx) const {
 		return Json(cJSON_GetArrayItem(json_, idx));
 	}
 
-	Json at(const char* key) {
+	Json at(const char* key) const  {
 		return Json(cJSON_GetObjectItem(json_, key));
 	}
 
-	Json operator[](int idx) {
+	Json operator[](int idx) const {
 		return Json(cJSON_GetArrayItem(json_, idx));
 	}
 
-	Json operator[](const char* key) {
+	Json operator[](const char* key) const {
 		return Json(cJSON_GetObjectItem(json_, key));
 	}
 
@@ -208,12 +212,23 @@ public:
 		cJSON_DeleteAllItem(json_);
 	}
 
-	bool operator==(const Json& ref) {
+	bool operator==(const Json& ref) const {
 		return cJSON_Compare(json_, ref.json_, true);
 	}
 
-	bool operator!=(const Json& ref) {
+	bool operator!=(const Json& ref) const {
 		return !cJSON_Compare(json_, ref.json_, true);
+	}
+
+	operator bool() const {
+		switch (type()) {
+		case kInvalid:
+		case kNull:
+		case kFalse:
+			return false;
+		default:
+			return true;
+		}
 	}
 
 	class Iterator:public std::iterator<std::input_iterator_tag,cJSON> {

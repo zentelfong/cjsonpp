@@ -291,7 +291,7 @@ CJSON_PUBLIC(void) cJSON_Release(cJSON *item)
 #if DEBUG
 			--total;
 			if (total == 0) {
-				printf("all cjson releassed\n");
+				printf("all cjson released\n");
 			}
 #endif
 		}
