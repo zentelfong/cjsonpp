@@ -78,7 +78,7 @@ public:
 			return (Type)(json_->type & 0xff);
 		}
 		else {
-			return kNull;
+			return kInvalid;
 		}
 	}
 
@@ -101,6 +101,9 @@ public:
 
 	std::string print() {
 		char* s = cJSON_Print(json_);
+		if(!s){
+			return "";
+		}
 		std::string s2(s);
 		cJSON_free(s);
 		return std::move(s2);
@@ -108,6 +111,9 @@ public:
 
 	std::string dump() {
 		char* s = cJSON_PrintUnformatted(json_);
+		if (!s) {
+			return "";
+		}
 		std::string s2(s);
 		cJSON_free(s);
 		return std::move(s2);
@@ -212,7 +218,10 @@ public:
 		}
 
 		const char* key() {
-			return json_->string;
+			if (json_)
+				return json_->string;
+			else
+				return "";
 		}
 
 		Json operator*() {
@@ -220,13 +229,15 @@ public:
 		}
 
 		Iterator& operator++() {
-			json_ = json_->next;
+			if(json_)
+				json_ = json_->next;
 			return *this;
 		}
 
 		Iterator operator++(int) {
 			cJSON* json = json_;
-			json_ = json_->next;
+			if(json)
+				json_ = json->next;
 			return Iterator(json);
 		}
 		
@@ -237,7 +248,10 @@ public:
 	};
 
 	Iterator begin() {
-		return Iterator(json_->child);
+		if (json_)
+			return Iterator(json_->child);
+		else
+			return Iterator(nullptr);
 	}
 
 	Iterator end() {

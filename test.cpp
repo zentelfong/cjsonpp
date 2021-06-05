@@ -37,10 +37,16 @@ int main(int argc, const char** argv) {
 	root.add("str", Json("test string"));
 	root.add("null", null);
 	root.add("null2", null.clone());
-	std::cout << "iterator root" << std::endl;
+
+	std::cout << "dump:" << std::endl;
 	for (auto it = root.begin(); it != root.end(); ++it) {
 		std::cout << it.key() << ":" << (*it).to<const char*>() << std::endl;
 	}
+
+
+	std::cout<< "num1:" << root["num1"].to<int>() << std::endl;
+
+
 
 	Json child = Json::array();
 
