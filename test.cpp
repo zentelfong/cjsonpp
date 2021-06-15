@@ -1,5 +1,6 @@
 #include "cJSONPP.h"
 #include <iostream>
+#include <vector>
 #include <stdio.h>
 
 using cjsonpp::Json;
@@ -59,6 +60,76 @@ void testParse() {
 	std::cout << "false:" << j.print() << std::endl;
 }
 
+class JsonModel {
+public:
+	virtual bool fromJson(Json& js) = 0;
+	virtual Json toJson() = 0;
+};
+
+class UserModel :public JsonModel {
+public:
+	UserModel(const std::string& name,uint32_t id) 
+		:name_(name),id_(id) {
+	}
+
+	UserModel()
+		:id_(0) {
+	}
+
+
+	bool fromJson(Json& js) override {
+		if (!js.isObject())
+			return false;
+		name_ = js["name"].to<std::string>();
+		id_ = js["id"].to<int>();
+		return true;
+	}
+
+	Json toJson() override {
+		Json user = Json::object();
+		user.add("name", name_);
+		user.add("id",(double)id_);
+		return user;
+	}
+
+private:
+	std::string name_;
+	uint32_t   id_;
+};
+
+class UserListModel :public JsonModel {
+public:
+	UserListModel(const std::string& str) {
+		Json list = Json::parse(str);
+		fromJson(list);
+	}
+
+	bool fromJson(Json& js) override {
+		if (!js.isArray())
+			return false;
+		users_.clear();
+		for (auto itr : js) {
+			UserModel user;
+			if (user.fromJson(itr)) {
+				users_.push_back(user);
+			}
+		}
+		return true;
+	}
+
+	Json toJson() override {
+		Json users = Json::array();
+		for (auto itr : users_) {
+			users.add(itr.toJson());
+		}
+		return users;
+	}
+private:
+	std::vector<UserModel> users_;
+};
+
+
+
 
 
 int main(int argc, const char** argv) {
@@ -98,6 +169,14 @@ int main(int argc, const char** argv) {
 	//std::string data = readFile("../data/canada.json");
 	//Json pased = Json::parse(data);
 	//auto out = pased.dump();
+
+	UserListModel model(R"([
+	{"id":1,"name":"user1"},
+	{"id":2,"name":"user2"},
+	{"id":3,"name":"user3"}])");
+
+	auto js = model.toJson().dump();
+	std::cout <<"dump user list model:"<< js << std::endl;
 
 	getchar();
 	return 0;

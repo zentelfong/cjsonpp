@@ -104,7 +104,7 @@ public:
 	}
 
 	static Json parse(const std::string& str) {
-		cJSON* j = cJSON_Parse(str.c_str());
+		cJSON* j = cJSON_ParseWithLength(str.data(), str.length());
 		return Json(j, false);
 	}
 
@@ -134,6 +134,11 @@ public:
 
 	bool isString() const  {
 		return cJSON_IsString(json_);
+	}
+
+	bool isBool() const {
+		auto t = type();
+		return t == kTrue || t == kFalse;
 	}
 
 	bool isTrue() const  {
@@ -194,6 +199,12 @@ public:
 
 	bool replace(const char* key, const Json& item) {
 		return cJSON_ReplaceItemInObject(json_, key, item.json_);
+	}
+
+	void replaceAdd(const char* key, const Json& item) {
+		if (!cJSON_ReplaceItemInObject(json_, key, item.json_)) {
+			add(key, item);
+		}
 	}
 
 	void remove(int which) {
@@ -271,14 +282,14 @@ public:
 		cJSON* json_;
 	};
 
-	Iterator begin() {
+	Iterator begin() const {
 		if (json_)
 			return Iterator(json_->child);
 		else
 			return Iterator(nullptr);
 	}
 
-	Iterator end() {
+	Iterator end() const {
 		return Iterator(nullptr);
 	}
 private:
@@ -314,7 +325,7 @@ template<> int Json::to() {
 
 template<> const char* Json::to() {
 	if (type() == kString) {
-		return json_->string;
+		return json_->valuestring;
 	}
 	else {
 		return "";
@@ -323,7 +334,7 @@ template<> const char* Json::to() {
 
 template<> std::string Json::to() {
 	if (type() == kString) {
-		return json_->string;
+		return json_->valuestring;
 	}
 	else {
 		return "";
