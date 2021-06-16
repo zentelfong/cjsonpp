@@ -1,9 +1,10 @@
 #include "cJSONPP.h"
+#include "cJRPC.h"
 #include <iostream>
 #include <vector>
 #include <stdio.h>
 
-using cjsonpp::Json;
+using namespace cjsonpp;
 
 std::string readFile(const char* filename) {
 	FILE* file = fopen(filename, "rb");
@@ -129,12 +130,53 @@ private:
 };
 
 
+class TestSender :public RpcSender {
+public:
+	TestSender(Rpc* rpc)
+		:rpc_(rpc)
+	{
+	}
+	void send(Json& js) override {
+		rpc_->recv(js);
+	}
+private:
+	Rpc* rpc_;
+};
+
+void testRpc() {
+	Rpc rpc;
+	TestSender sender(&rpc);
+	rpc.registerSender(&sender);
+	rpc.registerHandler("add", [](Request& req, Response& resp) {
+		int a = req.param("a").to<int>();
+		int b = req.param("b").to<int>();
+		resp.ok(Json(a + b));
+	});
+
+	rpc.registerHandler("mul", [](Request& req, Response& resp) {
+		int a = req.param("a").to<int>();
+		int b = req.param("b").to<int>();
+		resp.ok(Json(a * b));
+	});
+
+	Json param = Json::object();
+	param.add("a", 1);
+	param.add("b", 2);
+	rpc.call(Request("add", param), [](Response& resp) {
+		std::cout << "add:" << resp.result().to<int>() << std::endl;
+	});
+
+	rpc.call(Request("mul", param), [](Response& resp) {
+		std::cout << "mul:" << resp.result().to<int>() << std::endl;
+	});
+}
 
 
 
 int main(int argc, const char** argv) {
 	testParse();
-	
+	testRpc();
+
 	Json null;
 
 	Json root = Json::object();
@@ -158,8 +200,10 @@ int main(int argc, const char** argv) {
 	for (int i = 0; i < 10; ++i) {
 		child.add(i);
 	}
-
 	root.add("child", child);
+
+	Json array = {1,2,3,4,5,6,7};
+	root.add("array", array);
 
 	auto out22 = root.print();
 	std::cout << out22 << std::endl;

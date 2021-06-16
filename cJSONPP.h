@@ -47,6 +47,13 @@ public:
 		: json_(cJSON_CreateString(s.c_str())) {
 	}
 
+	Json(const std::initializer_list<Json>& v) 
+		:json_(cJSON_CreateArray()) {
+		for (auto itm : v) {
+			add(itm);
+		}
+	}
+
 	Json(cJSON* j,bool ref = true)
 		: json_(j) {
 		if(ref)
@@ -80,6 +87,9 @@ public:
 
 	static Json array() {
 		return Json(cJSON_CreateArray(), false);
+	}
+	static Json null() {
+		return Json();
 	}
 
 	Type type() const {
@@ -211,8 +221,26 @@ public:
 		cJSON_DeleteItemFromArray(json_, which);
 	}
 
+	Json detach(int which) {
+		cJSON* j = cJSON_DetachItemFromArray(json_, which);
+		if (j) {
+			return Json(j, false);
+		} else {
+			return Json();
+		}
+	}
+
 	void remove(const char* key) {
 		cJSON_DeleteItemFromObject(json_, key);
+	}
+
+	Json detach(const char* key) {
+		cJSON* j = cJSON_DetachItemFromObject(json_, key);
+		if (j) {
+			return Json(j, false);
+		} else {
+			return Json();
+		}
 	}
 
 	void removeCs(const char* key) {
@@ -297,7 +325,7 @@ private:
 };
 
 
-template<> double Json::to() {
+template<> inline double Json::to() {
 	if (type() == kNumber) {
 		return json_->valuedouble;
 	} else {
@@ -305,7 +333,7 @@ template<> double Json::to() {
 	}
 }
 
-template<> float Json::to() {
+template<> inline float Json::to() {
 	if (type() == kNumber) {
 		return (float)json_->valuedouble;
 	}
@@ -314,7 +342,7 @@ template<> float Json::to() {
 	}
 }
 
-template<> int Json::to() {
+template<> inline int Json::to() {
 	if (type() == kNumber) {
 		return json_->valueint;
 	}
@@ -323,7 +351,7 @@ template<> int Json::to() {
 	}
 }
 
-template<> const char* Json::to() {
+template<> inline const char* Json::to() {
 	if (type() == kString) {
 		return json_->valuestring;
 	}
@@ -332,7 +360,7 @@ template<> const char* Json::to() {
 	}
 }
 
-template<> std::string Json::to() {
+template<> inline std::string Json::to() {
 	if (type() == kString) {
 		return json_->valuestring;
 	}
@@ -341,7 +369,7 @@ template<> std::string Json::to() {
 	}
 }
 
-template<> bool Json::to() {
+template<> inline bool Json::to() {
 	switch (type()) {
 	case kTrue:
 		return true;
