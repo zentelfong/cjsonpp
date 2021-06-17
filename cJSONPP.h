@@ -106,7 +106,7 @@ public:
 		return Json(j, false);
 	}
 
-	template<class T> T to();
+	template<class T> T to() const;
 
 	static Json parse(const char* str) {
 		cJSON* j = cJSON_Parse(str);
@@ -191,6 +191,10 @@ public:
 		return Json(cJSON_GetObjectItem(json_, key));
 	}
 
+	const char* name() const {
+		return  json_->string ? json_->string : "";
+	}
+
 	void add(const char* key, const Json& item) {
 		cJSON_AddItemToObject(json_, key, item.json_);
 	}
@@ -212,7 +216,7 @@ public:
 	}
 
 	void replaceAdd(const char* key, const Json& item) {
-		if (!cJSON_ReplaceItemInObject(json_, key, item.json_)) {
+		if (!replace(key, item)) {
 			add(key, item);
 		}
 	}
@@ -325,7 +329,7 @@ private:
 };
 
 
-template<> inline double Json::to() {
+template<> inline double Json::to() const {
 	if (type() == kNumber) {
 		return json_->valuedouble;
 	} else {
@@ -333,7 +337,7 @@ template<> inline double Json::to() {
 	}
 }
 
-template<> inline float Json::to() {
+template<> inline float Json::to() const {
 	if (type() == kNumber) {
 		return (float)json_->valuedouble;
 	}
@@ -342,7 +346,7 @@ template<> inline float Json::to() {
 	}
 }
 
-template<> inline int Json::to() {
+template<> inline int Json::to() const {
 	if (type() == kNumber) {
 		return json_->valueint;
 	}
@@ -351,7 +355,7 @@ template<> inline int Json::to() {
 	}
 }
 
-template<> inline const char* Json::to() {
+template<> inline const char* Json::to() const {
 	if (type() == kString) {
 		return json_->valuestring;
 	}
@@ -360,7 +364,7 @@ template<> inline const char* Json::to() {
 	}
 }
 
-template<> inline std::string Json::to() {
+template<> inline std::string Json::to() const {
 	if (type() == kString) {
 		return json_->valuestring;
 	}
@@ -369,7 +373,7 @@ template<> inline std::string Json::to() {
 	}
 }
 
-template<> inline bool Json::to() {
+template<> inline bool Json::to() const {
 	switch (type()) {
 	case kTrue:
 		return true;

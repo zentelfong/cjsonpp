@@ -1,5 +1,6 @@
 #include "cJSONPP.h"
 #include "cJRPC.h"
+#include "cJValidator.h"
 #include <iostream>
 #include <vector>
 #include <stdio.h>
@@ -176,6 +177,22 @@ void testRpc() {
 int main(int argc, const char** argv) {
 	testParse();
 	testRpc();
+
+	Validator validator;
+	bool valied = validator.validate(Json::parse(R"({
+			"num":12344,
+			"array":[],
+			"obj":{
+				"item":""
+			}
+		})"), Json::parse(R"({
+			"num":"Int",
+			"array":["Int"],
+			"obj":{
+				"item":"Str"
+			}
+	})"));
+
 
 	Json null;
 
