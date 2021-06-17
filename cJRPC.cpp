@@ -36,14 +36,14 @@ Json Rpc::handleRequest(Json& req) {
 			break;
 		}
 
-		Request req(jmethod.to<std::string>(), jparams);
-		auto find = handlers_.find(req.method());
+		Request request(jmethod.to<std::string>(), jparams);
+		auto find = handlers_.find(request.method());
 		if (find == handlers_.end()) {
 			response.error(JSONRPC2_ENOMET, "invalid method");
 			break;
 		}
 
-		find->second(req, response);
+		find->second(request, response);
 	} while (0);
 
 	if (!response.valied()) {
