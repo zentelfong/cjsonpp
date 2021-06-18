@@ -135,7 +135,12 @@ bool checkRange(const Json& value, const char* str) {
 		//集合
 		char* endstr;
 		str = skipSpace(str + 1);
-		double num = value.to<double>();
+		double num;
+		if(value.isString())
+			num = value.size();
+		else
+			num = value.to<double>();
+
 		while (*str) {
 			double a = strtod(str, &endstr);
 			if (equare(a, num)) {
@@ -152,7 +157,11 @@ bool checkRange(const Json& value, const char* str) {
 		if (str[1] == '{') {
 			char* endstr;
 			str = skipSpace(str + 2);
-			double num = value.to<double>();
+			double num;
+			if (value.isString())
+				num = value.size();
+			else
+				num = value.to<double>();
 			while (*str) {
 				double a = strtod(str, &endstr);
 				if (equare(a, num)) {
@@ -226,7 +235,7 @@ bool checkRange(const Json& value, const char* str) {
 	return true;
 }
 
-bool isOptional(const char* opt) {
+inline bool isOptional(const char* opt) {
 	opt = skipSpace(opt);
 	return strCmp(opt, S_OPTINAL) == 0;
 }
