@@ -87,6 +87,8 @@ public:
 class Rpc {
 public:
 	Rpc();
+	Rpc(const Rpc&) = delete;
+	Rpc& operator=(const Rpc&) = delete;
 	~Rpc();
 
 	void registerSender(RpcSender* sender);
