@@ -172,7 +172,15 @@ public:
 	}
 
 	int size() const  {
-		return cJSON_GetArraySize(json_);
+		switch (type()) {
+		case kString:
+			return strlen(json_->valuestring);
+		case kArray:
+		case kObject:
+			return cJSON_GetArraySize(json_);
+		default:
+			return 0;
+		}
 	}
 
 	Json at(int idx) const {

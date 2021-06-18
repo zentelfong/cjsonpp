@@ -9,7 +9,7 @@ json数据如下：
 {
     "name":"zhang",
     "age":18,
-    "goodat":["basketball","pingpong"]
+    "goodat":["basketball","pingpong"],
     "feature":{
         "tall":180,
         "weight":70
@@ -23,9 +23,9 @@ json数据如下：
 {
     "name":"string [0,30]",
     "age":"int [0,100]",
-    "goodat":["optinal string"],
+    "goodat":["string"],
     "feature":{
-        "tall":"int (0,300)",
+        "tall":"optinal int (0,300)",
         "weight":"int (0,300)"
     }
 }
@@ -41,10 +41,18 @@ json数据如下：
 ##### 范围区间表示
 
 ​	(1,100) 表示 1 < x < 100
+
 ​	[1,100) 表示 1 <= x < 100
+
 ​	(1,100] 表示 1 < x <= 100
+
 ​	[1,100] 表示 1 <= x <= 100
+
 ​	{1,2,3,4,5} 表示在集合内
+
+​	!{1,2,3} 表示不在集合内
+
+​	
 
 ##### 示例如下：
 
@@ -54,7 +62,7 @@ json数据如下：
 4. float (0,1)
 5. string [10,20]  表示字符串长度范围
 
-
+6. int >0 表示大于0
 
 
 

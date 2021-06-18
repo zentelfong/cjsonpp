@@ -181,15 +181,20 @@ int main(int argc, const char** argv) {
 	Validator validator;
 	bool valied = validator.validate(Json::parse(R"({
 			"num":12344,
+			"num2":1,
+			"num3":2,
 			"array":[],
 			"obj":{
 				"item":""
 			}
 		})"), Json::parse(R"({
-			"num":"Int",
-			"array":["Int"],
+			"num":"int [1,20000]",
+			"num2":"int >0",
+			"num3":"{1,2,3,4,5}",
+			"array":["int"],
+			"opt":"optinal float",
 			"obj":{
-				"item":"Str"
+				"item":"string"
 			}
 	})"));
 
