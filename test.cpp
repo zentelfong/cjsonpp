@@ -1,3 +1,4 @@
+#include "gtest/gtest.h"
 #include "cJSONPP.h"
 #include "cJRPC.h"
 #include "cJValidator.h"
@@ -28,38 +29,84 @@ std::string readFile(const char* filename) {
 	return str;
 }
 
-void testRef() {
-	Json j1("hello world");
-	Json j2 = j1;
+TEST(CJSONPP, TestJson){
+	Json j1;
+	{
+		Json j2("hello world");
+		 j1 = j2;
+		EXPECT_EQ(j2, j1);
+	}
 
-	std::cout << j2.to<const char*>() << std::endl;
+	//j1数据依然有效
+	EXPECT_TRUE(j1.isString());
+
+	Json null;
+	EXPECT_TRUE(null.isNull());
+
+	Json root = Json::object();
+
+	root.add("num", 1);
+	EXPECT_EQ(root["num"].to<int>(), 1);
+
+	Json num = root.detach("num");
+	EXPECT_FALSE(root["num"].valied());
+
+
+	//dump
+	root.add("num", 1);
+	root.add("str", "hello");
+	root.add("b", true);
+	root.add("array", {1,2,3,4,5});
+	std::cout << "dump:" << std::endl;
+	for (auto it = root.begin(); it != root.end(); ++it) {
+		std::cout << it.key() << ":" << (*it).dump() << std::endl;
+	}
+
+	Json child = Json::array();
+
+	for (int i = 0; i < 10; ++i) {
+		child.add(i);
+	}
+	root.add("child", child);
+
+	Json array = { 1,2,3,4,5,6,7 };
+	root.add("array", array);
+
+	std::cout << root.print() << std::endl;
+
+	EXPECT_FALSE(root.empty());
+	root.removeAll();
+
+	EXPECT_TRUE(root.empty());
 }
 
-void testParse() {
+TEST(CJSONPP, TestParseValue) {
 	Json j = Json::parse(R"({
 		"a":"a",
 		"b":"b"
 	})");
-
-	std::cout << "object:" << j.print() << std::endl;
+	EXPECT_TRUE(j.isObject());
+	ASSERT_EQ(j["a"].to<std::string>(), "a");
+	ASSERT_EQ(j["b"].to<std::string>(), "b");
 
 	j = Json::parse("[1,2,3,4,5,6,7,8,9,0]");
-	std::cout << "array:" << j.print() << std::endl;
+	EXPECT_TRUE(j.isArray());
+	ASSERT_EQ(j.size(), 10);
 
 	j = Json::parse("123456");
-	std::cout << "number:" << j.print() << std::endl;
+	ASSERT_EQ(j.to<int>(), 123456);
 
 	j = Json::parse("null");
-	std::cout << "null:" << j.print() << std::endl;
+	EXPECT_TRUE(j.isNull());
 
 	j = Json::parse("\"hello world\"");
-	std::cout << "string:" << j.print() << std::endl;
+	EXPECT_TRUE(j.isString());
 
 	j = Json::parse("true");
-	std::cout << "true:" << j.print() << std::endl;
+	EXPECT_TRUE(j.isTrue());
 
 	j = Json::parse("false");
-	std::cout << "false:" << j.print() << std::endl;
+	EXPECT_TRUE(j.isFalse());
 }
 
 class JsonModel {
@@ -131,6 +178,16 @@ private:
 };
 
 
+TEST(CJSONPP, TestModel) {
+	UserListModel model(R"([
+	{"id":1,"name":"user1"},
+	{"id":2,"name":"user2"},
+	{"id":3,"name":"user3"}])");
+
+	auto users = model.toJson();
+	EXPECT_EQ(users.size(),3);
+}
+
 class TestSender :public RpcSender {
 public:
 	TestSender(Rpc* rpc)
@@ -144,7 +201,8 @@ private:
 	Rpc* rpc_;
 };
 
-void testRpc() {
+
+TEST(CJSONPP, TestRPC) {
 	Rpc rpc;
 	TestSender sender(&rpc);
 	rpc.registerSender(&sender);
@@ -164,30 +222,75 @@ void testRpc() {
 	param.add("a", 1);
 	param.add("b", 2);
 	rpc.call(Request("add", param), [](Response& resp) {
-		std::cout << "add:" << resp.result().to<int>() << std::endl;
+		EXPECT_EQ(resp.result().to<int>(), 3);
 	});
 
 	rpc.call(Request("mul", param), [](Response& resp) {
-		std::cout << "mul:" << resp.result().to<int>() << std::endl;
+		EXPECT_EQ(resp.result().to<int>(), 2);
 	});
 }
 
 
-
-int main(int argc, const char** argv) {
-	testParse();
-	testRpc();
-
+TEST(CJSONPP, ValidateNumber) {
 	Validator validator;
-	bool valied = validator.validate(Json::parse(R"({
-			"num":12344,
-			"num2":1,
-			"num3":2,
-			"array":[],
-			"obj":{
-				"item":""
-			}
-		})"), Json::parse(R"({
+	Json schema = Json::parse("{\"num\":\"optinal int [1,100)\"}");
+	EXPECT_TRUE(validator.validate(Json::parse(R"({})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":0})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":1})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":100})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":101})"), schema));
+
+
+	schema = Json::parse("{\"num\":\"int {1,2,3,4}\"}");
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":1})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":2})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":3})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":4})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":5})"), schema));
+}
+
+
+TEST(CJSONPP, ValidateString) {
+	Validator validator;
+	Json schema = Json::parse("{\"str\":\"string [1,10)\"}");
+	EXPECT_FALSE(validator.validate(Json::parse(R"({})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"str":""})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"str":"1"})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"str":"helloworld"})"), schema));
+}
+
+TEST(CJSONPP, ValidateBool) {
+	Validator validator;
+	Json schema = Json::parse("{\"b\":\"bool\"}");
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"b":123})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"b":null})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"b":true})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"b":false})"), schema));
+}
+
+TEST(CJSONPP, ValidateArray) {
+	Validator validator;
+	Json schema = Json::parse(R"(["int"])");
+	EXPECT_FALSE(validator.validate(Json::parse(R"({})"), schema));
+
+	//数组不限制长度，故空数组也能通过验证
+	EXPECT_TRUE(validator.validate(Json::parse(R"([])"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"([1,2,3])"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"(["abc"])"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"([true])"), schema));
+
+	//验证对象数组
+	schema = Json::parse(R"([{"a":"string"}])");
+	EXPECT_TRUE(validator.validate(Json::parse(R"([{"a":"11"}])"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"([{"a":123}])"), schema));
+}
+
+
+TEST(CJSONPP, TestValidate) {
+	Validator validator;
+	bool valied;
+	
+	Json schema = Json::parse(R"({
 			"num":"int [1,20000]",
 			"num2":"int >0",
 			"num3":"{1,2,3,4,5}",
@@ -196,56 +299,21 @@ int main(int argc, const char** argv) {
 			"obj":{
 				"item":"string"
 			}
-	})"));
+	})");
+
+	valied = validator.validate(Json::parse(R"({})"), schema);
+	EXPECT_FALSE(valied);
 
 
-	Json null;
-
-	Json root = Json::object();
-
-	root.add("num1", 1);
-	root.add("num2", 2.1234567);
-	root.add("str", "test string");
-	root.add("null", null);
-	root.add("null2", null.clone());
-	root.add("null3", nullptr);
-
-	std::cout << "dump:" << std::endl;
-	for (auto it = root.begin(); it != root.end(); ++it) {
-		std::cout << it.key() << ":" << (*it).to<const char*>() << std::endl;
-	}
-
-	std::cout<< "num1:" << root["num1"].to<int>() << std::endl;
-
-	Json child = Json::array();
-
-	for (int i = 0; i < 10; ++i) {
-		child.add(i);
-	}
-	root.add("child", child);
-
-	Json array = {1,2,3,4,5,6,7};
-	root.add("array", array);
-
-	auto out22 = root.print();
-	std::cout << out22 << std::endl;
-
-	root.removeAll();
-
-	//std::string data = readFile("../data/canada.json");
-	//Json pased = Json::parse(data);
-	//auto out = pased.dump();
-
-	UserListModel model(R"([
-	{"id":1,"name":"user1"},
-	{"id":2,"name":"user2"},
-	{"id":3,"name":"user3"}])");
-
-	auto js = model.toJson().dump();
-	std::cout <<"dump user list model:"<< js << std::endl;
-
-	getchar();
-	return 0;
+	valied = validator.validate(Json::parse(R"({
+			"num":12344,
+			"num2":1,
+			"num3":2,
+			"array":[],
+			"obj":{
+				"item":""
+			}
+		})"), schema);
+	EXPECT_TRUE(valied);
 }
-
 

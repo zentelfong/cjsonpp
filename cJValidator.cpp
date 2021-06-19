@@ -247,7 +247,7 @@ bool Validator::verifyValue(const Json& value, const char* opt) {
 	//解析optinal
 	bool optinal = strCmp(opt, S_OPTINAL) == 0;
 	if (optinal) {
-		if (!value) {
+		if (!value.valied()) {
 			return true;
 		}
 		opt += CSTR_LEN(S_OPTINAL);
@@ -292,7 +292,7 @@ bool Validator::verifyValue(const Json& value, const char* opt) {
 
 
 bool Validator::validate(const Json& data, const Json& schema) {
-	if (!data) {
+	if (!data.valied()) {
 		return false;
 	}
 	switch (schema.type()) {
@@ -320,7 +320,7 @@ bool Validator::validate(const Json& data, const Json& schema) {
 		}
 		for (auto itr = schema.begin(); itr != schema.end(); ++itr) {
 			Json child = data.at(itr.key());
-			if (child ) {
+			if (child.valied()) {
 				if(!validate(child, *itr))
 					return false;
 			} else {

@@ -264,11 +264,37 @@ public:
 	}
 
 	bool operator==(const Json& ref) const {
+		if (json_ == ref.json_)
+			return true;
 		return cJSON_Compare(json_, ref.json_, true);
 	}
 
 	bool operator!=(const Json& ref) const {
 		return !cJSON_Compare(json_, ref.json_, true);
+	}
+
+	bool valied()const {
+		switch (type()) {
+		case kInvalid:
+		case kNull:
+			return false;
+		default:
+			return true;
+		}
+	}
+
+	//ÅÐ¶Ïlist,object ÊÇ·ñÎª¿Õ
+	bool empty() {
+		switch (type()) {
+		case kArray:
+		case kObject:
+			return json_->child == nullptr;
+		case kString:
+			return !json_->valuestring 
+				|| !json_->valuestring[0];
+		default:
+			return true;
+		}
 	}
 
 	operator bool() const {

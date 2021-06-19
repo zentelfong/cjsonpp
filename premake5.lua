@@ -21,4 +21,6 @@ project "cjsonpp"
 		"*.h",
 		"*.c",
 		"*.cpp",
+		"gtest/*.h",
+		"gtest/*.cc",
 	}
