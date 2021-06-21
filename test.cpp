@@ -247,6 +247,14 @@ TEST(CJSONPP, ValidateNumber) {
 	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":3})"), schema));
 	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":4})"), schema));
 	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":5})"), schema));
+
+	schema = Json::parse("{\"num\":\"int !{1,2,3,4}\"}");
+
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":1})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":2})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":3})"), schema));
+	EXPECT_FALSE(validator.validate(Json::parse(R"({"num":4})"), schema));
+	EXPECT_TRUE(validator.validate(Json::parse(R"({"num":5})"), schema));
 }
 
 

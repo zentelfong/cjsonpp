@@ -9,6 +9,8 @@ public:
 	~Validator() {}
 
 	bool validate(const Json& data, const Json& schema);
+
+	const std::string& error() { return error_; }
 private:
 	bool verifyValue(const Json& value,const char* opt);
 	std::string error_;
