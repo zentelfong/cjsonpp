@@ -1,6 +1,7 @@
 #pragma once
 #include "cJSON.h"
 #include <string>
+#include <vector>
 #include <iterator>
 
 namespace cjsonpp {
@@ -45,6 +46,10 @@ public:
 
 	//base 64
 	Json(const uint8_t* s, size_t len);
+
+	Json(const std::vector<uint8_t>& data)
+		:Json(data.data(), data.size()) {
+	}
 
 	Json(const std::string& s)
 		: json_(cJSON_CreateString(s.c_str())) {

@@ -140,7 +140,7 @@ static ngx_int_t ngx_decode_base64(ngx_str_t *dst, ngx_str_t *src) {
 
 
 Json::Json(const uint8_t* s, size_t len) {
-	size_t enlen = BASE64_ENCODE_OUT_SIZE(len);
+	size_t enlen = BASE64_ENCODE_OUT_SIZE(len) + 1;
 	ngx_str_t src, dest;
 
 	src.data = (u_char*)s;
@@ -149,9 +149,31 @@ Json::Json(const uint8_t* s, size_t len) {
 	dest.data = (uint8_t*)cJSON_malloc(enlen);
 	dest.len = enlen;
 	ngx_encode_base64(&dest,&src);
-
+	dest.data[dest.len] = '\0';
 	json_ = cJSON_CreateRawFrom((char*)dest.data);
 }
+
+template<> std::vector<uint8_t> Json::to() const {
+	std::vector<uint8_t> data;
+	if (type() == kString || type() == kRaw) {
+		ngx_str_t src, dest;
+
+		src.data =(u_char*)json_->valuestring;
+		src.len = strlen(json_->valuestring);
+
+		size_t buflen = BASE64_DECODE_OUT_SIZE(src.len);
+		data.resize(buflen);
+
+		dest.data = data.data();
+		dest.len = buflen;
+		if (ngx_decode_base64(&dest, &src) == NGX_OK) {
+			data.resize(dest.len);
+		}
+	}
+	return data;
+}
+
+
 
 
 }//namespace

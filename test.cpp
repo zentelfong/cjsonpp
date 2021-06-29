@@ -107,6 +107,14 @@ TEST(CJSONPP, TestParseValue) {
 
 	j = Json::parse("false");
 	EXPECT_TRUE(j.isFalse());
+
+
+	std::vector<uint8_t> data1 = {1,2,3,4,5,6,7,8,9,0};
+	j = Json(data1.data(), data1.size());
+
+	auto data2 = j.to<std::vector<uint8_t> >();
+
+	ASSERT_EQ(data2, data1);
 }
 
 class JsonModel {
