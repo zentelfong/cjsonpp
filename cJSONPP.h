@@ -43,6 +43,9 @@ public:
 		: json_(cJSON_CreateString(s)) {
 	}
 
+	//base 64
+	Json(const uint8_t* s, size_t len);
+
 	Json(const std::string& s)
 		: json_(cJSON_CreateString(s.c_str())) {
 	}

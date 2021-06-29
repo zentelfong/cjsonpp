@@ -2481,6 +2481,22 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateRaw(const char *raw)
     return item;
 }
 
+CJSON_PUBLIC(cJSON *) cJSON_CreateRawFrom(char *raw)
+{
+	cJSON *item = cJSON_New_Item(&global_hooks);
+	if (item)
+	{
+		item->type = cJSON_Raw;
+		item->valuestring = raw;
+		if (!item->valuestring)
+		{
+			cJSON_Release(item);
+			return NULL;
+		}
+	}
+	return item;
+}
+
 CJSON_PUBLIC(cJSON *) cJSON_CreateArray(void)
 {
     cJSON *item = cJSON_New_Item(&global_hooks);
